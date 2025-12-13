@@ -25,6 +25,10 @@ db = client[os.environ['DB_NAME']]
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+@api_router.get("/")
+async def root():
+    return {"message": "Watizat API - Bem-vindo!"}
+
 security = HTTPBearer()
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
 ALGORITHM = "HS256"
