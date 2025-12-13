@@ -1,0 +1,161 @@
+{
+  "identity": {
+    "persona": "E1: The Anti-AI Designer",
+    "mission": "Create a warm, accessible, and vibrant platform for migrants that feels like a community, not a bureaucracy.",
+    "principles": [
+      "Fusion over Imitation: Mix Instagram's ease with Airbnb's utility.",
+      "Emotion First: Every screen must feel 'welcoming' and 'safe'.",
+      "Content is King: Clear, translatable text is the hero.",
+      "Zoom In: Focus on faces and human connection.",
+      "Negative Space: Reduce cognitive load for stressed users."
+    ]
+  },
+  "typography": {
+    "fonts": {
+      "headings": {
+        "family": "Outfit, sans-serif",
+        "weights": ["500", "700"],
+        "usage": "Headings, Hero text, Important labels",
+        "cdn_import": "@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&display=swap');"
+      },
+      "body": {
+        "family": "DM Sans, sans-serif",
+        "weights": ["400", "500", "700"],
+        "usage": "Body text, UI elements, Buttons",
+        "cdn_import": "@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');"
+      }
+    },
+    "rules": [
+      "Never use Inter for headings.",
+      "Use tight tracking (-0.02em) for large headings.",
+      "Use relaxed line-height (1.6) for body text to aid readability for non-native speakers."
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "name": "Sunset Orange",
+        "hex": "#FF8C42",
+        "tailwind": "bg-[#FF8C42] text-white hover:bg-[#E67A35]"
+      },
+      "secondary": {
+        "name": "Ocean Blue",
+        "hex": "#0F4C75",
+        "tailwind": "bg-[#0F4C75] text-white"
+      },
+      "accent": {
+        "name": "Helpful Teal",
+        "hex": "#3282B8",
+        "tailwind": "text-[#3282B8] bg-[#3282B8]/10"
+      },
+      "background": {
+        "light": "#FAFAFA",
+        "paper": "#FFFFFF",
+        "dark": "#1B262C"
+      },
+      "text": {
+        "primary": "#1B262C",
+        "secondary": "#52616B",
+        "muted": "#9CA3AF"
+      },
+      "categories": {
+        "food": "bg-green-100 text-green-700 border-green-200",
+        "legal": "bg-blue-100 text-blue-700 border-blue-200",
+        "health": "bg-red-100 text-red-700 border-red-200",
+        "housing": "bg-purple-100 text-purple-700 border-purple-200",
+        "social": "bg-yellow-100 text-yellow-700 border-yellow-200"
+      }
+    },
+    "theme_strategy": "Light Mode First. Dark mode is secondary. The app must feel 'sunny' and 'optimistic'. Avoid dark, moody aesthetics for the main interface."
+  },
+  "layout": {
+    "spacing": {
+      "base": "Use 2x standard spacing. If you think p-4 is enough, use p-6 or p-8.",
+      "container": "max-w-md mx-auto md:max-w-5xl",
+      "mobile_nav_height": "h-16"
+    },
+    "grids": {
+      "dashboard": "grid grid-cols-1 md:grid-cols-12 gap-6",
+      "feed": "flex flex-col gap-6 max-w-xl mx-auto",
+      "services": "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+    },
+    "radius": {
+      "default": "rounded-2xl",
+      "cards": "rounded-3xl",
+      "buttons": "rounded-full"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "rounded-full px-8 py-6 font-bold shadow-lg hover:shadow-xl transition-all active:scale-95",
+      "secondary": "rounded-full px-6 py-4 bg-white border-2 border-gray-100 hover:bg-gray-50 text-gray-900",
+      "ghost": "hover:bg-gray-100 rounded-xl px-4 py-2"
+    },
+    "cards": {
+      "style": "bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300",
+      "padding": "p-6 md:p-8"
+    },
+    "inputs": {
+      "style": "rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#FF8C42]/20 focus:border-[#FF8C42] transition-all h-12"
+    },
+    "chat_bubbles": {
+      "user": "bg-[#FF8C42] text-white rounded-2xl rounded-tr-sm",
+      "ai": "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-tl-sm shadow-sm"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-white/80 border-b border-white/20",
+    "gradients": "Use subtle mesh gradients for backgrounds: 'bg-gradient-to-br from-orange-50 via-white to-blue-50'",
+    "shadows": "Soft, diffuse shadows. Avoid harsh black shadows.",
+    "icons": "Use Lucide React. Stroke width 2px for clarity. Rounded line caps."
+  },
+  "images": {
+    "hero_community": {
+      "url": "https://images.pexels.com/photos/4881619/pexels-photo-4881619.jpeg",
+      "alt": "Diverse group of friends smiling outdoors",
+      "usage": "Landing page hero, Community section"
+    },
+    "category_food": {
+      "url": "https://images.pexels.com/photos/6646903/pexels-photo-6646903.jpeg",
+      "alt": "Hands sharing food donation",
+      "usage": "Food assistance category card"
+    },
+    "category_legal": {
+      "url": "https://images.pexels.com/photos/8112000/pexels-photo-8112000.jpeg",
+      "alt": "Friendly legal consultation",
+      "usage": "Legal aid category card"
+    },
+    "location_paris": {
+      "url": "https://images.unsplash.com/photo-1637227975982-a71ed6e658dc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzV8MHwxfHNlYXJjaHwyfHxwYXJpcyUyMHN0cmVldCUyMHN1bm55JTIwZGF5fGVufDB8fHx8MTc2NTYyNzgxMHww&ixlib=rb-4.1.0&q=85",
+      "alt": "Sunny Paris street with Eiffel Tower view",
+      "usage": "Location context, Map background"
+    }
+  },
+  "motion": {
+    "transitions": "transition-all duration-300 ease-out",
+    "hover": "hover:-translate-y-1 hover:shadow-lg",
+    "active": "active:scale-95",
+    "page_load": "animate-in fade-in slide-in-from-bottom-4 duration-500"
+  },
+  "accessibility": {
+    "contrast": "Ensure text is #1B262C on light backgrounds. Avoid light gray text.",
+    "touch_targets": "Minimum 44px for all interactive elements.",
+    "labels": "All icons must have aria-labels.",
+    "focus": "Visible focus rings in #FF8C42."
+  },
+  "instructions_to_main_agent": {
+    "setup": "Install 'lucide-react' and 'framer-motion' if not present. Add the fonts to index.html or CSS.",
+    "styling": "Use the defined color palette variables in tailwind.config.js. Override the default shadcn/ui radius to 1rem (rounded-2xl).",
+    "components": "Customize shadcn components to match the 'Rounded & Friendly' aesthetic. Remove sharp corners.",
+    "layout": "Prioritize mobile view. Ensure the bottom navigation is sticky and accessible."
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Do not use generic 'AI slop' designs.",
+    "Avoid dark gradients.",
+    "Use glassmorphism for overlays.",
+    "Add micro-interactions to every button.",
+    "Use 'sonner' for toasts.",
+    "Export components as named exports.",
+    "Export pages as default exports."
+  ]
+}
