@@ -1,72 +1,313 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
-
+from datetime import datetime, timezone, timedelta
+import bcrypt
+import jwt
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+from pdf_processor import WatizatPDFProcessor
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
 app = FastAPI()
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+security = HTTPBearer()
+JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
+ALGORITHM = "HS256"
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
+pdf_processor = WatizatPDFProcessor()
+
+class User(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    email: EmailStr
+    name: str
+    role: str
+    location: Optional[dict] = None
+    bio: Optional[str] = None
+    languages: List[str] = Field(default_factory=list)
+    categories: List[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    role: str
+    languages: List[str] = Field(default_factory=list)
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
+class Post(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    type: str
+    category: str
+    title: str
+    description: str
+    location: Optional[dict] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PostCreate(BaseModel):
+    type: str
+    category: str
+    title: str
+    description: str
+    location: Optional[dict] = None
+
+class Service(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    category: str
+    description: str
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[dict] = None
+    hours: Optional[str] = None
+
+class AIMessage(BaseModel):
+    message: str
+    language: str = "pt"
+
+class Match(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    helper_id: str
+    migrant_id: str
+    status: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+def create_token(user_id: str, email: str) -> str:
+    payload = {
+        'user_id': user_id,
+        'email': email,
+        'exp': datetime.now(timezone.utc) + timedelta(days=30)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
+        user_id = payload.get('user_id')
+        
+        user = await db.users.find_one({'id': user_id}, {'_id': 0})
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return User(**user)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+@api_router.post("/auth/register")
+async def register(user_data: UserRegister):
+    existing = await db.users.find_one({'email': user_data.email}, {'_id': 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
+    hashed_pw = bcrypt.hashpw(user_data.password.encode(), bcrypt.gensalt())
     
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+    user = User(
+        email=user_data.email,
+        name=user_data.name,
+        role=user_data.role,
+        languages=user_data.languages
+    )
+    
+    user_dict = user.model_dump()
+    user_dict['password'] = hashed_pw.decode()
+    user_dict['created_at'] = user_dict['created_at'].isoformat()
+    
+    await db.users.insert_one(user_dict)
+    
+    token = create_token(user.id, user.email)
+    return {'token': token, 'user': user}
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+@api_router.post("/auth/login")
+async def login(credentials: UserLogin):
+    user_data = await db.users.find_one({'email': credentials.email}, {'_id': 0})
     
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+    if not user_data:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    return status_checks
+    if not bcrypt.checkpw(credentials.password.encode(), user_data['password'].encode()):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    user_data.pop('password')
+    if isinstance(user_data['created_at'], str):
+        user_data['created_at'] = datetime.fromisoformat(user_data['created_at'])
+    
+    user = User(**user_data)
+    token = create_token(user.id, user.email)
+    
+    return {'token': token, 'user': user}
 
-# Include the router in the main app
+@api_router.get("/profile")
+async def get_profile(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@api_router.put("/profile")
+async def update_profile(updates: dict, current_user: User = Depends(get_current_user)):
+    allowed_fields = ['name', 'bio', 'location', 'languages', 'categories']
+    update_data = {k: v for k, v in updates.items() if k in allowed_fields}
+    
+    await db.users.update_one({'id': current_user.id}, {'$set': update_data})
+    
+    updated_user = await db.users.find_one({'id': current_user.id}, {'_id': 0, 'password': 0})
+    if isinstance(updated_user['created_at'], str):
+        updated_user['created_at'] = datetime.fromisoformat(updated_user['created_at'])
+    
+    return User(**updated_user)
+
+@api_router.post("/posts", response_model=Post)
+async def create_post(post_data: PostCreate, current_user: User = Depends(get_current_user)):
+    post = Post(
+        user_id=current_user.id,
+        type=post_data.type,
+        category=post_data.category,
+        title=post_data.title,
+        description=post_data.description,
+        location=post_data.location
+    )
+    
+    post_dict = post.model_dump()
+    post_dict['created_at'] = post_dict['created_at'].isoformat()
+    
+    await db.posts.insert_one(post_dict)
+    return post
+
+@api_router.get("/posts")
+async def get_posts(type: Optional[str] = None, category: Optional[str] = None):
+    query = {}
+    if type:
+        query['type'] = type
+    if category:
+        query['category'] = category
+    
+    posts = await db.posts.find(query, {'_id': 0}).sort('created_at', -1).to_list(100)
+    
+    for post in posts:
+        if isinstance(post['created_at'], str):
+            post['created_at'] = datetime.fromisoformat(post['created_at'])
+        
+        user = await db.users.find_one({'id': post['user_id']}, {'_id': 0, 'password': 0, 'email': 0})
+        if user:
+            post['user'] = {'name': user['name'], 'role': user['role']}
+    
+    return posts
+
+@api_router.get("/services")
+async def get_services(category: Optional[str] = None):
+    query = {}
+    if category:
+        query['category'] = category
+    
+    services = await db.services.find(query, {'_id': 0}).to_list(100)
+    return services
+
+@api_router.post("/ai/chat")
+async def ai_chat(message_data: AIMessage, current_user: User = Depends(get_current_user)):
+    try:
+        pdf_processor.load_index()
+        relevant_chunks = pdf_processor.search(message_data.message, k=3)
+        
+        context = "\n\n".join(relevant_chunks) if relevant_chunks else "Informação não encontrada no guia Watizat."
+        
+        system_message = f"""Você é um assistente especializado em ajudar migrantes em Paris. 
+        Use as informações do guia Watizat abaixo para responder perguntas.
+        Seja empático, claro e objetivo. Responda em {message_data.language}.
+        
+        Contexto do Watizat:
+        {context}
+        """
+        
+        chat = LlmChat(
+            api_key=os.environ['EMERGENT_LLM_KEY'],
+            session_id=f"user_{current_user.id}",
+            system_message=system_message
+        ).with_model("openai", "gpt-5.1")
+        
+        user_message = UserMessage(text=message_data.message)
+        response = await chat.send_message(user_message)
+        
+        chat_record = {
+            'id': str(uuid.uuid4()),
+            'user_id': current_user.id,
+            'message': message_data.message,
+            'response': response,
+            'language': message_data.language,
+            'created_at': datetime.now(timezone.utc).isoformat()
+        }
+        await db.ai_chats.insert_one(chat_record)
+        
+        return {'response': response, 'sources': relevant_chunks[:2] if relevant_chunks else []}
+    
+    except Exception as e:
+        logging.error(f"AI Chat error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error processing message")
+
+@api_router.post("/matches")
+async def create_match(helper_id: str, current_user: User = Depends(get_current_user)):
+    if current_user.role != 'migrant':
+        raise HTTPException(status_code=400, detail="Only migrants can create matches")
+    
+    match = Match(
+        helper_id=helper_id,
+        migrant_id=current_user.id,
+        status='pending'
+    )
+    
+    match_dict = match.model_dump()
+    match_dict['created_at'] = match_dict['created_at'].isoformat()
+    
+    await db.matches.insert_one(match_dict)
+    return match
+
+@api_router.get("/matches")
+async def get_matches(current_user: User = Depends(get_current_user)):
+    query = {}
+    if current_user.role == 'migrant':
+        query['migrant_id'] = current_user.id
+    else:
+        query['helper_id'] = current_user.id
+    
+    matches = await db.matches.find(query, {'_id': 0}).to_list(100)
+    return matches
+
+@api_router.get("/admin/stats")
+async def admin_stats(current_user: User = Depends(get_current_user)):
+    if current_user.role != 'admin':
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    total_users = await db.users.count_documents({})
+    total_posts = await db.posts.count_documents({})
+    total_matches = await db.matches.count_documents({})
+    
+    return {
+        'total_users': total_users,
+        'total_posts': total_posts,
+        'total_matches': total_matches
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
@@ -77,7 +318,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
