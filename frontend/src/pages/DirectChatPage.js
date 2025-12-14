@@ -17,6 +17,8 @@ export default function DirectChatPage() {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
   const [showMediaOptions, setShowMediaOptions] = useState(false);
+  const fileInputRef = useRef(null);
+  const videoInputRef = useRef(null);
 
   useEffect(() => {
     fetchOtherUser();
