@@ -145,12 +145,12 @@ export default function AuthPage() {
           {!isLogin && (
             <div>
               <Label>Você é</Label>
-              <div className="flex gap-4 mt-2">
+              <div className="grid grid-cols-3 gap-3 mt-2">
                 <button
                   type="button"
                   data-testid="role-migrant"
                   onClick={() => setRole('migrant')}
-                  className={`flex-1 py-3 rounded-xl font-medium transition-all ${
+                  className={`py-3 px-2 rounded-xl font-medium transition-all text-sm ${
                     role === 'migrant'
                       ? 'bg-primary text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -162,7 +162,7 @@ export default function AuthPage() {
                   type="button"
                   data-testid="role-helper"
                   onClick={() => setRole('helper')}
-                  className={`flex-1 py-3 rounded-xl font-medium transition-all ${
+                  className={`py-3 px-2 rounded-xl font-medium transition-all text-sm ${
                     role === 'helper'
                       ? 'bg-primary text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -170,6 +170,70 @@ export default function AuthPage() {
                 >
                   {t('helper')}
                 </button>
+                <button
+                  type="button"
+                  data-testid="role-volunteer"
+                  onClick={() => setRole('volunteer')}
+                  className={`py-3 px-2 rounded-xl font-medium transition-all text-sm ${
+                    role === 'volunteer'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  🤝 Voluntário
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!isLogin && role === 'volunteer' && (
+            <div className="space-y-4 p-4 bg-blue-50 rounded-xl border-2 border-primary/20">
+              <h3 className="font-bold text-primary">Informações Profissionais</h3>
+              
+              <div>
+                <Label>Área de Atuação</Label>
+                <select
+                  value={professionalArea}
+                  onChange={(e) => setProfessionalArea(e.target.value)}
+                  className="w-full mt-1 p-3 border rounded-xl bg-white"
+                >
+                  {professionalAreas.map(area => (
+                    <option key={area.value} value={area.value}>
+                      {area.icon} {area.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label>Especialidades (separadas por vírgula)</Label>
+                <Input
+                  value={specialties}
+                  onChange={(e) => setSpecialties(e.target.value)}
+                  placeholder="Ex: Direito de Família, Asilo, Imigração"
+                  className="rounded-xl mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Disponibilidade</Label>
+                <Input
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  placeholder="Ex: Fins de semana, Noites"
+                  className="rounded-xl mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Experiência</Label>
+                <textarea
+                  value={experience}
+                  onChange={(e) => setExperience(e.target.value)}
+                  placeholder="Descreva sua experiência profissional..."
+                  rows={3}
+                  className="w-full mt-1 p-3 border rounded-xl bg-white"
+                />
               </div>
             </div>
           )}
