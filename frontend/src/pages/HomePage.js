@@ -382,8 +382,8 @@ export default function HomePage() {
               {user?.role === 'migrant' ? 'Preciso de Ajuda' : 'Oferecer Ajuda'}
             </Button>
           </DialogTrigger>
-          <DialogContent className="rounded-3xl max-w-2xl max-h-[85vh]" data-testid="create-post-dialog">
-            <DialogHeader>
+          <DialogContent className="rounded-3xl max-w-2xl max-h-[90vh] overflow-hidden" data-testid="create-post-dialog">
+            <DialogHeader className="pb-4 border-b">
               <DialogTitle className="text-2xl font-heading">
                 {newPost.type === 'need' ? '🆘 Preciso de Ajuda' : '🤝 Quero Ajudar'}
               </DialogTitle>
@@ -391,24 +391,31 @@ export default function HomePage() {
                 Preencha as informações abaixo para publicar
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-6 overflow-y-auto max-h-[calc(85vh-120px)] pr-2">
-              {/* Categoria */}
-              <div className="bg-gray-50 p-4 rounded-2xl">
-                <Label className="text-base font-bold mb-2 block">📂 Categoria</Label>
-                <Select value={newPost.category} onValueChange={(v) => setNewPost({...newPost, category: v})}>
-                  <SelectTrigger data-testid="category-select" className="rounded-xl h-12">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
+            <div className="overflow-y-auto max-h-[calc(90vh-180px)] px-1">
+              <div className="space-y-6 py-4">
+                {/* Categoria */}
+                <div className="bg-gray-50 p-5 rounded-2xl">
+                  <Label className="text-base font-bold mb-3 block">📂 Selecione a Categoria</Label>
+                  <div className="grid grid-cols-2 gap-3">
                     {categories.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        <span className="mr-2">{cat.icon}</span>
-                        {cat.label}
-                      </SelectItem>
+                      <button
+                        key={cat.value}
+                        type="button"
+                        onClick={() => setNewPost({...newPost, category: cat.value})}
+                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                          newPost.category === cat.value
+                            ? 'bg-primary text-white border-primary shadow-lg scale-105'
+                            : 'bg-white border-gray-200 hover:border-primary hover:shadow-md'
+                        }`}
+                      >
+                        <div className="text-2xl mb-2">{cat.icon}</div>
+                        <div className={`font-bold text-sm ${newPost.category === cat.value ? 'text-white' : 'text-textPrimary'}`}>
+                          {cat.label}
+                        </div>
+                      </button>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  </div>
+                </div>
 
               {/* Título */}
               <div className="bg-gray-50 p-4 rounded-2xl">
