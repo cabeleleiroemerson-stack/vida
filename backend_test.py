@@ -241,6 +241,286 @@ class WatizatAPITester:
             return True
         return success
 
+    def test_volunteer_registration_with_help_categories(self):
+        """Test volunteer registration with help_categories field"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        volunteer_data = {
+            "email": f"volunteer_food_health_{timestamp}@example.com",
+            "password": "VolunteerPass123!",
+            "name": f"Volunteer Food Health {timestamp}",
+            "role": "volunteer",
+            "languages": ["pt", "fr"],
+            "help_categories": ["food", "health"],
+            "professional_area": "healthcare",
+            "availability": "weekends"
+        }
+        
+        success, response = self.run_test(
+            "Volunteer Registration with Help Categories",
+            "POST",
+            "auth/register",
+            200,
+            data=volunteer_data
+        )
+        
+        if success and 'token' in response:
+            # Store volunteer token for later tests
+            self.volunteer_token = response['token']
+            self.volunteer_id = response['user']['id']
+            return True
+        return False
+
+    def test_migrant_registration(self):
+        """Test migrant registration"""
+        timestamp = datetime.now().strftime('%H%M%S')
+        migrant_data = {
+            "email": f"migrant_{timestamp}@example.com",
+            "password": "MigrantPass123!",
+            "name": f"Migrant User {timestamp}",
+            "role": "migrant",
+            "languages": ["pt", "ar"]
+        }
+        
+        success, response = self.run_test(
+            "Migrant Registration",
+            "POST",
+            "auth/register",
+            200,
+            data=migrant_data
+        )
+        
+        if success and 'token' in response:
+            # Store migrant token for later tests
+            self.migrant_token = response['token']
+            self.migrant_id = response['user']['id']
+            return True
+        return False
+
+    def test_create_posts_different_categories(self):
+        """Test creating posts with different categories as migrant"""
+        # Switch to migrant token
+        original_token = self.token
+        self.token = self.migrant_token
+        
+        # Create food category post
+        food_post_data = {
+            "type": "need",
+            "category": "food",
+            "title": "Preciso de ajuda com alimentação",
+            "description": "Estou procurando informações sobre bancos de alimentos em Paris."
+        }
+        
+        success1, response1 = self.run_test(
+            "Create Food Category Post",
+            "POST",
+            "posts",
+            200,
+            data=food_post_data
+        )
+        
+        if success1:
+            self.food_post_id = response1.get('id')
+        
+        # Create legal category post
+        legal_post_data = {
+            "type": "need",
+            "category": "legal",
+            "title": "Preciso de ajuda jurídica",
+            "description": "Preciso de orientação sobre documentos de residência."
+        }
+        
+        success2, response2 = self.run_test(
+            "Create Legal Category Post",
+            "POST",
+            "posts",
+            200,
+            data=legal_post_data
+        )
+        
+        if success2:
+            self.legal_post_id = response2.get('id')
+        
+        # Restore original token
+        self.token = original_token
+        
+        return success1 and success2
+
+    def test_volunteer_post_filtering(self):
+        """Test that volunteer only sees posts matching their help_categories"""
+        # Switch to volunteer token (help_categories: ['food', 'health'])
+        original_token = self.token
+        self.token = self.volunteer_token
+        
+        success, response = self.run_test(
+            "Get Posts as Volunteer (should filter by help_categories)",
+            "GET",
+            "posts",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            # Check that posts have can_help field and are filtered correctly
+            food_posts = [p for p in response if p.get('category') == 'food' and p.get('type') == 'need']
+            legal_posts = [p for p in response if p.get('category') == 'legal' and p.get('type') == 'need']
+            
+            # Volunteer should see food posts (has 'food' in help_categories)
+            food_visible = len(food_posts) > 0
+            # Volunteer should NOT see legal posts (doesn't have 'legal' in help_categories)
+            legal_not_visible = len(legal_posts) == 0
+            
+            # Check can_help field is present
+            can_help_present = all('can_help' in post for post in response)
+            
+            if food_visible and legal_not_visible and can_help_present:
+                self.log_test("Post Filtering Logic", True, f"Food posts visible: {len(food_posts)}, Legal posts hidden: {len(legal_posts) == 0}")
+                # Restore original token
+                self.token = original_token
+                return True
+            else:
+                error_msg = f"Food visible: {food_visible}, Legal hidden: {legal_not_visible}, can_help present: {can_help_present}"
+                self.log_test("Post Filtering Logic", False, error_msg)
+        
+        # Restore original token
+        self.token = original_token
+        return False
+
+    def test_can_chat_endpoint_positive(self):
+        """Test can-chat endpoint - should return true for matching categories"""
+        # Switch to volunteer token
+        original_token = self.token
+        self.token = self.volunteer_token
+        
+        success, response = self.run_test(
+            "Can Chat - Positive Case (matching categories)",
+            "GET",
+            f"can-chat/{self.migrant_id}",
+            200
+        )
+        
+        if success and isinstance(response, dict):
+            can_chat = response.get('can_chat', False)
+            reason = response.get('reason', '')
+            
+            if can_chat:
+                self.log_test("Can Chat Logic - Positive", True, f"Reason: {reason}")
+                # Restore original token
+                self.token = original_token
+                return True
+            else:
+                self.log_test("Can Chat Logic - Positive", False, f"Expected can_chat=true, got false. Reason: {reason}")
+        
+        # Restore original token
+        self.token = original_token
+        return False
+
+    def test_can_chat_endpoint_negative(self):
+        """Test can-chat endpoint - should return false for non-matching categories"""
+        # Create volunteer with different help_categories
+        timestamp = datetime.now().strftime('%H%M%S')
+        volunteer_education_data = {
+            "email": f"volunteer_education_{timestamp}@example.com",
+            "password": "VolunteerPass123!",
+            "name": f"Volunteer Education {timestamp}",
+            "role": "volunteer",
+            "languages": ["pt", "en"],
+            "help_categories": ["education"],  # Only education, no food or legal
+            "professional_area": "education"
+        }
+        
+        success, response = self.run_test(
+            "Register Education Volunteer",
+            "POST",
+            "auth/register",
+            200,
+            data=volunteer_education_data
+        )
+        
+        if not success:
+            return False
+        
+        education_volunteer_token = response['token']
+        
+        # Switch to education volunteer token
+        original_token = self.token
+        self.token = education_volunteer_token
+        
+        success, response = self.run_test(
+            "Can Chat - Negative Case (no matching categories)",
+            "GET",
+            f"can-chat/{self.migrant_id}",
+            200
+        )
+        
+        if success and isinstance(response, dict):
+            can_chat = response.get('can_chat', False)
+            reason = response.get('reason', '')
+            
+            if not can_chat and reason == 'no_matching_categories':
+                self.log_test("Can Chat Logic - Negative", True, f"Correctly denied chat. Reason: {reason}")
+                # Restore original token
+                self.token = original_token
+                return True
+            else:
+                self.log_test("Can Chat Logic - Negative", False, f"Expected can_chat=false with no_matching_categories, got can_chat={can_chat}, reason={reason}")
+        
+        # Restore original token
+        self.token = original_token
+        return False
+
+    def test_education_volunteer_post_filtering(self):
+        """Test that education volunteer sees no need posts (no matching categories)"""
+        # Create volunteer with only education category
+        timestamp = datetime.now().strftime('%H%M%S')
+        volunteer_education_data = {
+            "email": f"volunteer_education_posts_{timestamp}@example.com",
+            "password": "VolunteerPass123!",
+            "name": f"Volunteer Education Posts {timestamp}",
+            "role": "volunteer",
+            "languages": ["pt", "en"],
+            "help_categories": ["education"],
+            "professional_area": "education"
+        }
+        
+        success, response = self.run_test(
+            "Register Education Volunteer for Post Test",
+            "POST",
+            "auth/register",
+            200,
+            data=volunteer_education_data
+        )
+        
+        if not success:
+            return False
+        
+        education_volunteer_token = response['token']
+        
+        # Switch to education volunteer token
+        original_token = self.token
+        self.token = education_volunteer_token
+        
+        success, response = self.run_test(
+            "Get Posts as Education Volunteer (should see no need posts)",
+            "GET",
+            "posts",
+            200
+        )
+        
+        if success and isinstance(response, list):
+            # Should see no need posts since migrant only has food/legal posts
+            need_posts = [p for p in response if p.get('type') == 'need']
+            
+            if len(need_posts) == 0:
+                self.log_test("Education Volunteer Post Filtering", True, "Correctly sees no need posts")
+                # Restore original token
+                self.token = original_token
+                return True
+            else:
+                self.log_test("Education Volunteer Post Filtering", False, f"Should see 0 need posts, but saw {len(need_posts)}")
+        
+        # Restore original token
+        self.token = original_token
+        return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Watizat API Tests...")
