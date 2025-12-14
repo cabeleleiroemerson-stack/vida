@@ -200,10 +200,11 @@ export default function HomePage() {
                   {post.user_id !== user.id && (
                     <Button
                       data-testid="chat-with-user-button"
-                      onClick={() => window.location.href = `/direct-chat/${post.user_id}`}
+                      onClick={() => navigate(`/direct-chat/${post.user_id}`)}
                       size="sm"
                       className="rounded-full bg-primary hover:bg-primary-hover"
                     >
+                      <MessageCircle size={16} className="mr-1" />
                       Conversar
                     </Button>
                   )}
