@@ -447,9 +447,9 @@ Mestrado em Direitos Humanos - Sorbonne"
 
           {/* Step 4: Disponibilidade */}
           {step === 4 && (
-            <div className="space-y-6 animate-fade-in">
-              <h2 className="text-2xl font-heading font-bold text-textPrimary mb-6 flex items-center gap-2">
-                <Shield size={28} className="text-primary" />
+            <div className="space-y-4 sm:space-y-6 animate-fade-in">
+              <h2 className="text-xl sm:text-2xl font-heading font-bold text-textPrimary mb-4 sm:mb-6 flex items-center gap-2">
+                <Shield size={24} className="text-primary sm:w-7 sm:h-7" />
                 Disponibilidade e Tipos de Ajuda
               </h2>
 
