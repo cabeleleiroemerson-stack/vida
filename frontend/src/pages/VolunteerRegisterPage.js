@@ -207,7 +207,7 @@ export default function VolunteerRegisterPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <Label className="text-base font-bold mb-2 flex items-center gap-2">
+                  <Label className="text-sm sm:text-base font-bold mb-2 flex items-center gap-2">
                     <span className="text-red-500">*</span>
                     Nome Completo
                   </Label>
@@ -215,12 +215,12 @@ export default function VolunteerRegisterPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Seu nome completo"
-                    className="rounded-xl h-12"
+                    className="rounded-xl h-11 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-base font-bold mb-2 flex items-center gap-2">
+                  <Label className="text-sm sm:text-base font-bold mb-2 flex items-center gap-2">
                     <span className="text-red-500">*</span>
                     Email
                   </Label>
@@ -229,12 +229,12 @@ export default function VolunteerRegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="seu@email.com"
-                    className="rounded-xl h-12"
+                    className="rounded-xl h-11 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-base font-bold mb-2 flex items-center gap-2">
+                  <Label className="text-sm sm:text-base font-bold mb-2 flex items-center gap-2">
                     <span className="text-red-500">*</span>
                     Senha
                   </Label>
@@ -243,19 +243,19 @@ export default function VolunteerRegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Mínimo 6 caracteres"
-                    className="rounded-xl h-12"
+                    className="rounded-xl h-11 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-base font-bold mb-2">
+                  <Label className="text-sm sm:text-base font-bold mb-2">
                     Telefone (Opcional)
                   </Label>
                   <Input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+33 6 12 34 56 78"
-                    className="rounded-xl h-12"
+                    className="rounded-xl h-11 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
               </div>
