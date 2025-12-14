@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../App';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import BottomNav from '../components/BottomNav';
-import { Plus, MapPin, User, Clock, MessageCircle, Image as ImageIcon, MessageSquare, Send, X, Filter } from 'lucide-react';
+import { Plus, MapPin, User, Clock, MessageCircle, Image as ImageIcon, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -16,13 +16,9 @@ export default function HomePage() {
   const { user, token } = useContext(AuthContext);
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
   const [posts, setPosts] = useState([]);
-  const [filteredPosts, setFilteredPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
   const [newPost, setNewPost] = useState({
     type: user?.role === 'migrant' ? 'need' : 'offer',
     category: 'food',
@@ -37,39 +33,18 @@ export default function HomePage() {
   const [commentingOn, setCommentingOn] = useState(null);
 
   const categories = [
-    { value: 'food', label: t('food'), color: 'bg-green-100 text-green-700 border-green-200', icon: '🍽️' },
-    { value: 'legal', label: t('legal'), color: 'bg-blue-100 text-blue-700 border-blue-200', icon: '⚖️' },
-    { value: 'health', label: t('health'), color: 'bg-red-100 text-red-700 border-red-200', icon: '🏥' },
-    { value: 'housing', label: t('housing'), color: 'bg-purple-100 text-purple-700 border-purple-200', icon: '🏠' },
-    { value: 'work', label: t('work'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: '💼' },
-    { value: 'education', label: t('education'), color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: '📚' },
-    { value: 'social', label: t('social'), color: 'bg-pink-100 text-pink-700 border-pink-200', icon: '🤝' },
-    { value: 'clothes', label: 'Roupas', color: 'bg-orange-100 text-orange-700 border-orange-200', icon: '👕' },
-    { value: 'furniture', label: 'Móveis', color: 'bg-teal-100 text-teal-700 border-teal-200', icon: '🪑' },
-    { value: 'transport', label: 'Transporte', color: 'bg-cyan-100 text-cyan-700 border-cyan-200', icon: '🚗' }
+    { value: 'food', label: t('food'), color: 'bg-green-100 text-green-700 border-green-200' },
+    { value: 'legal', label: t('legal'), color: 'bg-blue-100 text-blue-700 border-blue-200' },
+    { value: 'health', label: t('health'), color: 'bg-red-100 text-red-700 border-red-200' },
+    { value: 'housing', label: t('housing'), color: 'bg-purple-100 text-purple-700 border-purple-200' },
+    { value: 'work', label: t('work'), color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+    { value: 'education', label: t('education'), color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+    { value: 'social', label: t('social'), color: 'bg-pink-100 text-pink-700 border-pink-200' }
   ];
 
   useEffect(() => {
     fetchPosts();
   }, []);
-
-  useEffect(() => {
-    filterPosts();
-  }, [posts, categoryFilter, typeFilter]);
-
-  const filterPosts = () => {
-    let filtered = posts;
-    
-    if (categoryFilter !== 'all') {
-      filtered = filtered.filter(p => p.category === categoryFilter);
-    }
-    
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(p => p.type === typeFilter);
-    }
-    
-    setFilteredPosts(filtered);
-  };
 
   const fetchPosts = async () => {
     try {
@@ -114,26 +89,12 @@ export default function HomePage() {
     }
   };
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5000000) {
-        toast.error('Imagem muito grande! Máximo 5MB');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewPost({...newPost, images: [...(newPost.images || []), reader.result]});
-        toast.success('Foto adicionada!');
-      };
-      reader.readAsDataURL(file);
+  const handleImageUpload = () => {
+    const imageUrl = prompt('Cole a URL da imagem:');
+    if (imageUrl) {
+      setNewPost({...newPost, images: [...(newPost.images || []), imageUrl]});
+      toast.success('Imagem adicionada!');
     }
-  };
-
-  const removeImage = (index) => {
-    const newImages = newPost.images.filter((_, idx) => idx !== index);
-    setNewPost({...newPost, images: newImages});
   };
 
   const getLocation = () => {
@@ -205,69 +166,11 @@ export default function HomePage() {
     return categories.find(c => c.value === category)?.color || 'bg-gray-100 text-gray-700';
   };
 
-  const getCategoryIcon = (category) => {
-    return categories.find(c => c.value === category)?.icon || '📝';
-  };
-
   return (
     <div className="min-h-screen bg-background pb-20" data-testid="home-page">
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10 glassmorphism">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-heading font-bold text-textPrimary mb-4">Feed</h1>
-          
-          {/* Filtros */}
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            <Button
-              data-testid="filter-all"
-              onClick={() => setCategoryFilter('all')}
-              variant={categoryFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              className={`rounded-full whitespace-nowrap ${categoryFilter === 'all' ? 'bg-primary text-white' : ''}`}
-            >
-              <Filter size={16} className="mr-1" />
-              Todos
-            </Button>
-            {categories.map(cat => (
-              <Button
-                key={cat.value}
-                data-testid={`filter-${cat.value}`}
-                onClick={() => setCategoryFilter(cat.value)}
-                variant={categoryFilter === cat.value ? 'default' : 'outline'}
-                size="sm"
-                className={`rounded-full whitespace-nowrap ${categoryFilter === cat.value ? 'bg-primary text-white' : ''}`}
-              >
-                <span className="mr-1">{cat.icon}</span>
-                {cat.label}
-              </Button>
-            ))}
-          </div>
-
-          <div className="flex gap-2 mt-3">
-            <Button
-              onClick={() => setTypeFilter('all')}
-              variant={typeFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              className={`rounded-full ${typeFilter === 'all' ? 'bg-primary text-white' : ''}`}
-            >
-              Todos
-            </Button>
-            <Button
-              onClick={() => setTypeFilter('need')}
-              variant={typeFilter === 'need' ? 'default' : 'outline'}
-              size="sm"
-              className={`rounded-full ${typeFilter === 'need' ? 'bg-green-600 text-white' : ''}`}
-            >
-              Precisa de Ajuda
-            </Button>
-            <Button
-              onClick={() => setTypeFilter('offer')}
-              variant={typeFilter === 'offer' ? 'default' : 'outline'}
-              size="sm"
-              className={`rounded-full ${typeFilter === 'offer' ? 'bg-primary text-white' : ''}`}
-            >
-              Oferece Ajuda
-            </Button>
-          </div>
+          <h1 className="text-2xl font-heading font-bold text-textPrimary">Feed</h1>
         </div>
       </div>
 
@@ -295,10 +198,7 @@ export default function HomePage() {
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        <span className="mr-2">{cat.icon}</span>
-                        {cat.label}
-                      </SelectItem>
+                      <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -327,20 +227,13 @@ export default function HomePage() {
                 <Button
                   type="button"
                   data-testid="add-image-button"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={handleImageUpload}
                   variant="outline"
                   className="flex-1 rounded-xl"
                 >
                   <ImageIcon size={18} className="mr-2" />
                   Adicionar Foto
                 </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
                 <Button
                   type="button"
                   data-testid="add-location-button"
@@ -356,14 +249,8 @@ export default function HomePage() {
               {newPost.images && newPost.images.length > 0 && (
                 <div className="flex gap-2 flex-wrap">
                   {newPost.images.map((img, idx) => (
-                    <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border group">
+                    <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border">
                       <img src={img} alt="" className="w-full h-full object-cover" />
-                      <button
-                        onClick={() => removeImage(idx)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X size={14} />
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -389,13 +276,13 @@ export default function HomePage() {
 
         {loading ? (
           <div className="text-center py-12 text-textMuted">Carregando...</div>
-        ) : filteredPosts.length === 0 ? (
+        ) : posts.length === 0 ? (
           <div className="text-center py-12 text-textMuted" data-testid="no-posts-message">
-            {categoryFilter !== 'all' || typeFilter !== 'all' ? 'Nenhum post encontrado com esses filtros.' : 'Nenhum post ainda. Seja o primeiro!'}
+            Nenhum post ainda. Seja o primeiro!
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredPosts.map((post) => (
+            {posts.map((post) => (
               <div 
                 key={post.id} 
                 data-testid="post-card"
@@ -411,8 +298,7 @@ export default function HomePage() {
                       <p className="text-sm text-textMuted capitalize">{post.user?.role}</p>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getCategoryStyle(post.category)} flex items-center gap-1`}>
-                    <span>{getCategoryIcon(post.category)}</span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getCategoryStyle(post.category)}`}>
                     {categories.find(c => c.value === post.category)?.label}
                   </span>
                 </div>
@@ -420,7 +306,7 @@ export default function HomePage() {
                 <p className="text-textSecondary mb-3 leading-relaxed">{post.description}</p>
 
                 {post.images && post.images.length > 0 && (
-                  <div className={`grid ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-2 mb-3`}>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
                     {post.images.map((img, idx) => (
                       <img key={idx} src={img} alt="" className="w-full h-48 object-cover rounded-2xl" />
                     ))}
