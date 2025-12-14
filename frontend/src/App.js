@@ -20,11 +20,14 @@ export const AuthContext = React.createContext();
 function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(true);
   const { i18n } = useTranslation();
 
   useEffect(() => {
     if (token) {
       fetchUser();
+    } else {
+      setLoading(false);
     }
   }, [token]);
 
@@ -43,6 +46,8 @@ function App() {
       }
     } catch (error) {
       console.error('Error fetching user:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
