@@ -629,7 +629,7 @@ async def get_user_by_id(user_id: str, current_user: User = Depends(get_current_
 async def can_chat_with_user(other_user_id: str, current_user: User = Depends(get_current_user)):
     """
     Verifica se o usuário atual pode iniciar chat com outro usuário.
-    Para voluntários, só podem conversar com migrantes se tiverem categorias de ajuda compatíveis.
+    Para voluntários e helpers, só podem conversar com migrantes se tiverem categorias de ajuda compatíveis.
     """
     other_user = await db.users.find_one({'id': other_user_id}, {'_id': 0})
     if not other_user:
@@ -637,25 +637,25 @@ async def can_chat_with_user(other_user_id: str, current_user: User = Depends(ge
     
     current_user_data = await db.users.find_one({'id': current_user.id}, {'_id': 0})
     
-    # Migrantes podem conversar com qualquer voluntário
+    # Migrantes podem conversar com qualquer voluntário ou helper
     if current_user.role == 'migrant':
         return {'can_chat': True, 'reason': 'allowed'}
     
-    # Voluntários só podem conversar com migrantes se tiverem categorias compatíveis
-    if current_user.role == 'volunteer' and other_user.get('role') == 'migrant':
-        volunteer_categories = current_user_data.get('help_categories', []) if current_user_data else []
+    # Voluntários e helpers só podem conversar com migrantes se tiverem categorias compatíveis
+    if current_user.role in ['volunteer', 'helper'] and other_user.get('role') == 'migrant':
+        helper_categories = current_user_data.get('help_categories', []) if current_user_data else []
         
-        if not volunteer_categories:
-            # Se voluntário não definiu categorias, permitir chat (legacy)
+        if not helper_categories:
+            # Se não definiu categorias, permitir chat (legacy)
             return {'can_chat': True, 'reason': 'no_categories_defined'}
         
         # Primeiro verificar need_categories do migrante
         migrant_need_categories = other_user.get('need_categories', [])
         
         if migrant_need_categories:
-            # Verificar match entre need_categories do migrante e help_categories do voluntário
+            # Verificar match entre need_categories do migrante e help_categories
             for cat in migrant_need_categories:
-                if cat in volunteer_categories:
+                if cat in helper_categories:
                     return {'can_chat': True, 'reason': 'category_match', 'matching_category': cat}
         
         # Se migrante não tem need_categories, verificar pelos posts
@@ -665,9 +665,9 @@ async def can_chat_with_user(other_user_id: str, current_user: User = Depends(ge
             # Se o migrante não tem posts nem need_categories, permitir chat
             return {'can_chat': True, 'reason': 'no_needs_defined'}
         
-        # Verificar se há algum post do migrante em categoria que o voluntário pode ajudar
+        # Verificar se há algum post do migrante em categoria que pode ajudar
         for post in migrant_posts:
-            if post.get('category') in volunteer_categories:
+            if post.get('category') in helper_categories:
                 return {'can_chat': True, 'reason': 'category_match', 'matching_category': post.get('category')}
         
         return {'can_chat': False, 'reason': 'no_matching_categories'}
