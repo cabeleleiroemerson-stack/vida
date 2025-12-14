@@ -8,14 +8,14 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#FF8C42',
-          hover: '#E67A35'
+          DEFAULT: '#1CA9C9',
+          hover: '#1890B0'
         },
         secondary: {
-          DEFAULT: '#0F4C75'
+          DEFAULT: '#0D7A99'
         },
         accent: {
-          DEFAULT: '#3282B8'
+          DEFAULT: '#4CB8D8'
         },
         background: '#FAFAFA',
         paper: '#FFFFFF',
