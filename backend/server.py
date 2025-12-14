@@ -60,6 +60,14 @@ class UserRegister(BaseModel):
     professional_specialties: Optional[List[str]] = Field(default_factory=list)
     availability: Optional[str] = None
     experience: Optional[str] = None
+    education: Optional[str] = None
+    certifications: Optional[List[str]] = Field(default_factory=list)
+    professional_id: Optional[str] = None
+    organization: Optional[str] = None
+    years_experience: Optional[str] = None
+    help_types: Optional[List[str]] = Field(default_factory=list)
+    phone: Optional[str] = None
+    linkedin: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
