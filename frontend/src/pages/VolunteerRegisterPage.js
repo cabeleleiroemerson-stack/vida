@@ -290,34 +290,34 @@ export default function VolunteerRegisterPage() {
 
           {/* Step 2: Área Profissional */}
           {step === 2 && (
-            <div className="space-y-6 animate-fade-in">
-              <h2 className="text-2xl font-heading font-bold text-textPrimary mb-6 flex items-center gap-2">
-                <Briefcase size={28} className="text-primary" />
+            <div className="space-y-4 sm:space-y-6 animate-fade-in">
+              <h2 className="text-xl sm:text-2xl font-heading font-bold text-textPrimary mb-4 sm:mb-6 flex items-center gap-2">
+                <Briefcase size={24} className="text-primary sm:w-7 sm:h-7" />
                 Área Profissional
               </h2>
 
               <div>
-                <Label className="text-base font-bold mb-3 flex items-center gap-2">
+                <Label className="text-sm sm:text-base font-bold mb-3 flex items-center gap-2">
                   <span className="text-red-500">*</span>
                   Selecione sua Área de Atuação
                 </Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {PROFESSIONAL_AREAS.map(area => (
                     <button
                       key={area.value}
                       type="button"
                       onClick={() => setProfessionalArea(area.value)}
-                      className={`p-4 rounded-2xl border-2 transition-all text-left ${
+                      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all text-left ${
                         professionalArea === area.value
                           ? 'bg-primary text-white border-primary shadow-lg'
                           : 'bg-white border-gray-200 hover:border-primary hover:shadow-md'
                       }`}
                     >
-                      <div className="text-3xl mb-2">{area.icon}</div>
-                      <div className={`font-bold mb-1 ${professionalArea === area.value ? 'text-white' : 'text-textPrimary'}`}>
+                      <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">{area.icon}</div>
+                      <div className={`text-sm sm:text-base font-bold mb-1 ${professionalArea === area.value ? 'text-white' : 'text-textPrimary'}`}>
                         {area.label}
                       </div>
-                      <div className={`text-sm ${professionalArea === area.value ? 'text-white/90' : 'text-textSecondary'}`}>
+                      <div className={`text-xs sm:text-sm ${professionalArea === area.value ? 'text-white/90' : 'text-textSecondary'}`}>
                         {area.desc}
                       </div>
                     </button>
