@@ -257,7 +257,7 @@ export default function DirectChatPage() {
               </Button>
               <Button
                 data-testid="send-image-button"
-                onClick={() => sendMedia('image')}
+                onClick={() => fileInputRef.current?.click()}
                 variant="outline"
                 size="sm"
                 className="flex-1 rounded-xl"
@@ -265,9 +265,16 @@ export default function DirectChatPage() {
                 <ImageIcon size={18} className="mr-2" />
                 Foto
               </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileUpload(e, 'image')}
+                className="hidden"
+              />
               <Button
                 data-testid="send-video-button"
-                onClick={() => sendMedia('video')}
+                onClick={() => videoInputRef.current?.click()}
                 variant="outline"
                 size="sm"
                 className="flex-1 rounded-xl"
@@ -275,6 +282,13 @@ export default function DirectChatPage() {
                 <Video size={18} className="mr-2" />
                 Vídeo
               </Button>
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                onChange={(e) => handleFileUpload(e, 'video')}
+                className="hidden"
+              />
             </div>
           )}
           <div className="flex gap-3">
