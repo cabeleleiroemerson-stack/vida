@@ -199,13 +199,13 @@ export default function VolunteerRegisterPage() {
 
           {/* Step 1: Informações Pessoais */}
           {step === 1 && (
-            <div className="space-y-6 animate-fade-in">
-              <h2 className="text-2xl font-heading font-bold text-textPrimary mb-6 flex items-center gap-2">
-                <User size={28} className="text-primary" />
+            <div className="space-y-4 sm:space-y-6 animate-fade-in">
+              <h2 className="text-xl sm:text-2xl font-heading font-bold text-textPrimary mb-4 sm:mb-6 flex items-center gap-2">
+                <User size={24} className="text-primary sm:w-7 sm:h-7" />
                 Informações Pessoais
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <Label className="text-base font-bold mb-2 flex items-center gap-2">
                     <span className="text-red-500">*</span>
