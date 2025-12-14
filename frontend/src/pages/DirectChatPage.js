@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
-import { ArrowLeft, Send, User, MapPin, Image as ImageIcon, Video, Paperclip } from 'lucide-react';
+import { ArrowLeft, Send, User, MapPin, Image as ImageIcon, Video, Paperclip, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function DirectChatPage() {
