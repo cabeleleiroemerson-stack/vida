@@ -276,7 +276,8 @@ async def get_posts(type: Optional[str] = None, category: Optional[str] = None):
         else:
             user = await db.users.find_one({'id': post['user_id']}, {'_id': 0, 'password': 0, 'email': 0})
             if user:
-                post['user'] = {'name': user['name'], 'role': user['role']}
+                display_name = user.get('display_name') if user.get('use_display_name') else user['name']
+                post['user'] = {'name': display_name, 'role': user['role']}
     
     return posts
 
