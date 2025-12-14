@@ -29,13 +29,13 @@ code {
         --card-foreground: 210 17% 13%;
         --popover: 0 0% 100%;
         --popover-foreground: 210 17% 13%;
-        --primary: 198 89% 33%;
+        --primary: 225 86% 35%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 200 87% 23%;
+        --secondary: 225 82% 21%;
         --secondary-foreground: 0 0% 100%;
         --muted: 0 0% 96.1%;
         --muted-foreground: 207 16% 39%;
-        --accent: 198 83% 38%;
+        --accent: 225 81% 43%;
         --accent-foreground: 0 0% 100%;
         --destructive: 0 84.2% 60.2%;
         --destructive-foreground: 0 0% 98%;
