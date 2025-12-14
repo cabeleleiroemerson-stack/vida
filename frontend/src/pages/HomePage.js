@@ -615,8 +615,8 @@ export default function HomePage() {
                     {categories.find(c => c.value === post.category)?.label}
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-textPrimary mb-2">{post.title}</h3>
-                <p className="text-textSecondary mb-3 leading-relaxed">{post.description}</p>
+                <h3 className="text-base sm:text-lg font-bold text-textPrimary mb-2 break-words">{post.title}</h3>
+                <p className="text-sm sm:text-base text-textSecondary mb-3 leading-relaxed break-words">{post.description}</p>
 
                 {post.images && post.images.length > 0 && (
                   <div className={`grid ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-2 mb-3`}>
