@@ -520,6 +520,47 @@ async def get_user_by_id(user_id: str, current_user: User = Depends(get_current_
     
     return user
 
+@api_router.get("/can-chat/{other_user_id}")
+async def can_chat_with_user(other_user_id: str, current_user: User = Depends(get_current_user)):
+    """
+    Verifica se o usuário atual pode iniciar chat com outro usuário.
+    Para voluntários, só podem conversar com migrantes se tiverem categorias de ajuda compatíveis.
+    """
+    other_user = await db.users.find_one({'id': other_user_id}, {'_id': 0})
+    if not other_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    current_user_data = await db.users.find_one({'id': current_user.id}, {'_id': 0})
+    
+    # Migrantes podem conversar com qualquer voluntário
+    if current_user.role == 'migrant':
+        return {'can_chat': True, 'reason': 'allowed'}
+    
+    # Voluntários só podem conversar com migrantes se tiverem categorias compatíveis
+    if current_user.role == 'volunteer' and other_user.get('role') == 'migrant':
+        # Buscar posts do migrante para verificar categorias
+        migrant_posts = await db.posts.find({'user_id': other_user_id, 'type': 'need'}, {'_id': 0}).to_list(100)
+        
+        if not migrant_posts:
+            # Se o migrante não tem posts, permitir chat
+            return {'can_chat': True, 'reason': 'no_posts'}
+        
+        volunteer_categories = current_user_data.get('help_categories', []) if current_user_data else []
+        
+        if not volunteer_categories:
+            # Se voluntário não definiu categorias, permitir chat (legacy)
+            return {'can_chat': True, 'reason': 'no_categories_defined'}
+        
+        # Verificar se há algum post do migrante em categoria que o voluntário pode ajudar
+        for post in migrant_posts:
+            if post.get('category') in volunteer_categories:
+                return {'can_chat': True, 'reason': 'category_match', 'matching_category': post.get('category')}
+        
+        return {'can_chat': False, 'reason': 'no_matching_categories'}
+    
+    # Outros casos: permitir
+    return {'can_chat': True, 'reason': 'allowed'}
+
 @api_router.get("/volunteers")
 async def get_volunteers(area: Optional[str] = None):
     query = {'role': 'volunteer'}
