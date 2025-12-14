@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 export default function HomePage() {
   const { user, token } = useContext(AuthContext);
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreatePost, setShowCreatePost] = useState(false);
