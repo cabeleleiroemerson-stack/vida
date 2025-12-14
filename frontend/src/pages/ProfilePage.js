@@ -11,13 +11,40 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, token } = useContext(AuthContext);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [displayName, setDisplayName] = useState(user?.display_name || '');
+  const [useDisplayName, setUseDisplayName] = useState(user?.use_display_name || false);
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const saveDisplayName = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/profile`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          display_name: displayName,
+          use_display_name: useDisplayName
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Nome fictício atualizado!');
+        setShowEditDialog(false);
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error('Erro ao atualizar');
+    }
   };
 
   return (
