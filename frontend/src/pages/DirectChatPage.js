@@ -194,7 +194,28 @@ export default function DirectChatPage() {
 
       <div className="flex-1 overflow-y-auto px-4 py-6 pb-24">
         <div className="max-w-3xl mx-auto space-y-4">
-          {loading ? (
+          {!canChat ? (
+            <div className="text-center py-12" data-testid="chat-restricted">
+              <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6 max-w-md mx-auto">
+                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock size={32} className="text-yellow-600" />
+                </div>
+                <h3 className="text-lg font-bold text-yellow-800 mb-2">Chat Restrito</h3>
+                <p className="text-yellow-700 text-sm mb-4">
+                  Você não pode conversar com este usuário porque não se comprometeu a ajudar nas categorias de necessidades que ele postou.
+                </p>
+                <p className="text-yellow-600 text-xs">
+                  Para conversar, atualize seu perfil e adicione mais categorias de ajuda.
+                </p>
+                <Button
+                  onClick={() => navigate('/profile')}
+                  className="mt-4 rounded-full bg-yellow-600 hover:bg-yellow-700 text-white"
+                >
+                  Atualizar Perfil
+                </Button>
+              </div>
+            </div>
+          ) : loading ? (
             <div className="text-center py-12 text-textMuted">Carregando mensagens...</div>
           ) : messages.length === 0 ? (
             <div className="text-center py-12 text-textMuted" data-testid="no-messages">
