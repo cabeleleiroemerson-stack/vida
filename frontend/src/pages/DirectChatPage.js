@@ -52,6 +52,23 @@ export default function DirectChatPage() {
     }
   };
 
+  const checkCanChat = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/can-chat/${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCanChat(data.can_chat);
+        if (!data.can_chat) {
+          setChatRestrictionReason(data.reason);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking chat permission:', error);
+    }
+  };
+
   const fetchMessages = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/messages/${userId}`, {
