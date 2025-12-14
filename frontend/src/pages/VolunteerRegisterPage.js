@@ -512,35 +512,38 @@ Mestrado em Direitos Humanos - Sorbonne"
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-10 pt-6 border-t">
+          <div className="flex justify-between mt-6 sm:mt-10 pt-4 sm:pt-6 border-t gap-2 sm:gap-4">
             {step > 1 && (
               <Button
                 onClick={prevStep}
                 variant="outline"
-                className="rounded-full px-8 py-6"
+                className="rounded-full px-4 sm:px-8 py-3 sm:py-6 text-sm sm:text-base"
               >
-                <ArrowLeft size={20} className="mr-2" />
-                Anterior
+                <ArrowLeft size={18} className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Anterior</span>
+                <span className="sm:hidden">Voltar</span>
               </Button>
             )}
             {step < 4 ? (
               <Button
                 onClick={nextStep}
-                className="ml-auto rounded-full px-8 py-6 bg-primary hover:bg-primary-hover"
+                className="ml-auto rounded-full px-4 sm:px-8 py-3 sm:py-6 bg-primary hover:bg-primary-hover text-sm sm:text-base"
               >
-                Próximo
-                <ArrowRight size={20} className="ml-2" />
+                <span className="hidden sm:inline">Próximo</span>
+                <span className="sm:hidden">Avançar</span>
+                <ArrowRight size={18} className="ml-1 sm:ml-2" />
               </Button>
             ) : (
               <Button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="ml-auto rounded-full px-8 py-6 bg-green-600 hover:bg-green-700 text-white font-bold"
+                className="ml-auto rounded-full px-4 sm:px-8 py-3 sm:py-6 bg-green-600 hover:bg-green-700 text-white font-bold text-sm sm:text-base"
               >
                 {loading ? 'Cadastrando...' : (
                   <>
-                    <Check size={20} className="mr-2" />
-                    Finalizar Cadastro
+                    <Check size={18} className="mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Finalizar Cadastro</span>
+                    <span className="sm:hidden">Finalizar</span>
                   </>
                 )}
               </Button>
