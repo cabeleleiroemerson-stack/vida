@@ -1,10 +1,14 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../App';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import BottomNav from '../components/BottomNav';
-import { User, Mail, Globe, LogOut } from 'lucide-react';
+import { User, Mail, Globe, LogOut, Edit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 export default function ProfilePage() {
   const { user, logout } = useContext(AuthContext);
