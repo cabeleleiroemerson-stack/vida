@@ -495,6 +495,47 @@ Mestrado em Direitos Humanos - Sorbonne"
                 />
               </div>
 
+              {/* NOVA SEÇÃO: Categorias de Ajuda */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-2xl border-2 border-blue-200">
+                <Label className="text-base font-bold mb-3 flex items-center gap-2">
+                  <span className="text-red-500">*</span>
+                  <span className="text-2xl">🎯</span>
+                  Em quais áreas você quer ajudar?
+                </Label>
+                <p className="text-sm text-textSecondary mb-4">
+                  Você só verá pedidos de ajuda nas categorias selecionadas abaixo.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {HELP_CATEGORIES.map(cat => (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => toggleHelpCategory(cat.value)}
+                      className={`p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${
+                        helpCategories.includes(cat.value)
+                          ? 'bg-primary text-white border-primary shadow-lg'
+                          : 'bg-white border-gray-200 hover:border-primary hover:shadow-md'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{cat.icon}</div>
+                      <div className={`text-sm font-bold ${helpCategories.includes(cat.value) ? 'text-white' : 'text-textPrimary'}`}>
+                        {cat.label}
+                      </div>
+                      <div className={`text-xs ${helpCategories.includes(cat.value) ? 'text-white/80' : 'text-textSecondary'}`}>
+                        {cat.desc}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                {helpCategories.length > 0 && (
+                  <div className="mt-4 p-3 bg-green-100 rounded-xl border border-green-300">
+                    <p className="text-sm text-green-800 font-medium">
+                      ✓ {helpCategories.length} categoria{helpCategories.length > 1 ? 's' : ''} selecionada{helpCategories.length > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <Label className="text-base font-bold mb-3">
                   Tipos de Ajuda que Pode Oferecer
