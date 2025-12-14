@@ -18,6 +18,25 @@ export default function AuthPage() {
   const [name, setName] = useState('');
   const [role, setRole] = useState(roleFromUrl || 'migrant');
   const [loading, setLoading] = useState(false);
+  
+  // Campos para voluntários
+  const [professionalArea, setProfessionalArea] = useState('legal');
+  const [specialties, setSpecialties] = useState('');
+  const [availability, setAvailability] = useState('');
+  const [experience, setExperience] = useState('');
+
+  const professionalAreas = [
+    { value: 'legal', label: 'Jurídico', icon: '⚖️' },
+    { value: 'health', label: 'Saúde', icon: '🏥' },
+    { value: 'education', label: 'Educação', icon: '📚' },
+    { value: 'translation', label: 'Tradução', icon: '🌍' },
+    { value: 'family', label: 'Família e Social', icon: '👨‍👩‍👧' },
+    { value: 'employment', label: 'Orientação Profissional', icon: '💼' },
+    { value: 'housing', label: 'Habitação', icon: '🏠' },
+    { value: 'administration', label: 'Administração', icon: '📋' },
+    { value: 'finance', label: 'Finanças', icon: '💰' },
+    { value: 'technology', label: 'Tecnologia', icon: '💻' }
+  ];
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
