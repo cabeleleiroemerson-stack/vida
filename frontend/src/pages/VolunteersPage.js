@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import BottomNav from '../components/BottomNav';
-import { Search, User, MessageCircle, Star, Briefcase, Clock, Languages } from 'lucide-react';
+import { Search, User, MessageCircle, Star, Briefcase, Clock, Languages, GraduationCap, Shield, Building } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const PROFESSIONAL_AREAS = [
