@@ -102,6 +102,14 @@ export default function VolunteerRegisterPage() {
     );
   };
 
+  const toggleHelpCategory = (category) => {
+    setHelpCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
   const handleSubmit = async () => {
     if (!availability) {
       toast.error('Informe sua disponibilidade');
