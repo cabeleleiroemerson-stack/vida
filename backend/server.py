@@ -75,6 +75,18 @@ class PostCreate(BaseModel):
     title: str
     description: str
     location: Optional[dict] = None
+    images: Optional[List[str]] = Field(default_factory=list)
+
+class PostComment(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    post_id: str
+    user_id: str
+    comment: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PostCommentCreate(BaseModel):
+    comment: str
 
 class Service(BaseModel):
     model_config = ConfigDict(extra="ignore")
