@@ -66,7 +66,8 @@ class UserRegister(BaseModel):
     organization: Optional[str] = None
     years_experience: Optional[str] = None
     help_types: Optional[List[str]] = Field(default_factory=list)
-    help_categories: Optional[List[str]] = Field(default_factory=list)  # Categorias de ajuda (food, legal, health, etc.)
+    help_categories: Optional[List[str]] = Field(default_factory=list)  # Categorias de ajuda que voluntário oferece
+    need_categories: Optional[List[str]] = Field(default_factory=list)  # Categorias de ajuda que migrante precisa
     phone: Optional[str] = None
     linkedin: Optional[str] = None
 
