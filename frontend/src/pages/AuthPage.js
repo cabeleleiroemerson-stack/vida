@@ -8,17 +8,17 @@ import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
 import { ArrowLeft, Check, User, Heart, Shield } from 'lucide-react';
 
-const NEED_CATEGORIES = [
-  { value: 'food', label: 'Alimentação', icon: '🍽️', desc: 'Refeições, cestas básicas' },
-  { value: 'legal', label: 'Jurídico', icon: '⚖️', desc: 'Documentos, asilo, vistos' },
-  { value: 'health', label: 'Saúde', icon: '🏥', desc: 'Médico, psicológico' },
-  { value: 'housing', label: 'Moradia', icon: '🏠', desc: 'Abrigo, habitação' },
-  { value: 'work', label: 'Emprego', icon: '💼', desc: 'Trabalho, CV, orientação' },
-  { value: 'education', label: 'Educação', icon: '📚', desc: 'Cursos, escolarização' },
-  { value: 'social', label: 'Apoio Social', icon: '🤝', desc: 'Assistência, integração' },
-  { value: 'clothes', label: 'Roupas', icon: '👕', desc: 'Vestuário, calçados' },
-  { value: 'furniture', label: 'Móveis', icon: '🪑', desc: 'Móveis, utensílios' },
-  { value: 'transport', label: 'Transporte', icon: '🚗', desc: 'Deslocamento, passagens' }
+const HELP_CATEGORIES = [
+  { value: 'food', label: 'Alimentação', icon: '🍽️', desc: 'Distribuição de alimentos, refeições' },
+  { value: 'legal', label: 'Jurídico', icon: '⚖️', desc: 'Orientação sobre documentos' },
+  { value: 'health', label: 'Saúde', icon: '🏥', desc: 'Acompanhamento médico' },
+  { value: 'housing', label: 'Moradia', icon: '🏠', desc: 'Ajuda com habitação' },
+  { value: 'work', label: 'Emprego', icon: '💼', desc: 'Orientação profissional' },
+  { value: 'education', label: 'Educação', icon: '📚', desc: 'Aulas, cursos, idiomas' },
+  { value: 'social', label: 'Apoio Social', icon: '🤝', desc: 'Integração, acolhimento' },
+  { value: 'clothes', label: 'Roupas', icon: '👕', desc: 'Doação de vestuário' },
+  { value: 'furniture', label: 'Móveis', icon: '🪑', desc: 'Doação de móveis' },
+  { value: 'transport', label: 'Transporte', icon: '🚗', desc: 'Ajuda com deslocamento' }
 ];
 
 const professionalAreas = [
@@ -44,10 +44,10 @@ export default function AuthPage() {
   const [name, setName] = useState('');
   const [role, setRole] = useState(roleFromUrl || 'migrant');
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1); // Step 1: Basic info, Step 2: Categories (for migrants)
+  const [step, setStep] = useState(1);
   
-  // Campos para migrantes - categorias de necessidade
-  const [needCategories, setNeedCategories] = useState([]);
+  // Categorias selecionadas (para migrant = necessidades, para helper = áreas que quer ajudar)
+  const [selectedCategories, setSelectedCategories] = useState([]);
   
   // Campos para voluntários (cadastro rápido)
   const [professionalArea, setProfessionalArea] = useState('legal');
@@ -59,8 +59,8 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const toggleNeedCategory = (category) => {
-    setNeedCategories(prev => 
+  const toggleCategory = (category) => {
+    setSelectedCategories(prev => 
       prev.includes(category) 
         ? prev.filter(c => c !== category)
         : [...prev, category]
@@ -70,15 +70,18 @@ export default function AuthPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Se é cadastro de migrante e está na etapa 1, vai para etapa 2
-    if (!isLogin && role === 'migrant' && step === 1) {
+    // Se é cadastro de migrante ou helper e está na etapa 1, vai para etapa 2
+    if (!isLogin && (role === 'migrant' || role === 'helper') && step === 1) {
       setStep(2);
       return;
     }
     
-    // Validação para migrantes
-    if (!isLogin && role === 'migrant' && needCategories.length === 0) {
-      toast.error('Selecione pelo menos uma categoria de ajuda que você precisa');
+    // Validação para migrantes e helpers
+    if (!isLogin && (role === 'migrant' || role === 'helper') && selectedCategories.length === 0) {
+      toast.error(role === 'migrant' 
+        ? 'Selecione pelo menos uma categoria de ajuda que você precisa'
+        : 'Selecione pelo menos uma categoria que você quer ajudar'
+      );
       return;
     }
     
@@ -95,7 +98,10 @@ export default function AuthPage() {
             role, 
             languages: ['pt', 'fr'],
             ...(role === 'migrant' && {
-              need_categories: needCategories
+              need_categories: selectedCategories
+            }),
+            ...(role === 'helper' && {
+              help_categories: selectedCategories
             }),
             ...(role === 'volunteer' && {
               professional_area: professionalArea,
@@ -135,6 +141,20 @@ export default function AuthPage() {
     }
   };
 
+  const getStepTitle = () => {
+    if (isLogin) return t('login');
+    if (step === 1) return t('register');
+    if (role === 'migrant') return 'O que você precisa?';
+    if (role === 'helper') return 'Como você quer ajudar?';
+    return t('register');
+  };
+
+  const getStepSubtitle = () => {
+    if (step === 2 && role === 'migrant') return 'Selecione as áreas em que você precisa de ajuda';
+    if (step === 2 && role === 'helper') return 'Selecione as áreas em que você pode oferecer ajuda';
+    return null;
+  };
+
   return (
     <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
       <button
@@ -146,8 +166,8 @@ export default function AuthPage() {
       </button>
 
       <div className="w-full max-w-md bg-white rounded-3xl shadow-card p-8 animate-fade-in" data-testid="auth-form">
-        {/* Step indicator for migrant registration */}
-        {!isLogin && role === 'migrant' && (
+        {/* Step indicator for registration */}
+        {!isLogin && (role === 'migrant' || role === 'helper') && (
           <div className="flex justify-center mb-6">
             <div className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
@@ -166,14 +186,12 @@ export default function AuthPage() {
         )}
 
         <h2 className="text-3xl font-heading font-bold text-textPrimary mb-2 text-center">
-          {isLogin ? t('login') : (
-            step === 1 ? t('register') : 'O que você precisa?'
-          )}
+          {getStepTitle()}
         </h2>
         
-        {!isLogin && step === 2 && role === 'migrant' && (
+        {getStepSubtitle() && (
           <p className="text-center text-textSecondary mb-6">
-            Selecione as áreas em que você precisa de ajuda
+            {getStepSubtitle()}
           </p>
         )}
 
@@ -228,10 +246,10 @@ export default function AuthPage() {
                     <button
                       type="button"
                       data-testid="role-migrant"
-                      onClick={() => setRole('migrant')}
+                      onClick={() => { setRole('migrant'); setSelectedCategories([]); }}
                       className={`py-4 px-3 rounded-xl font-medium transition-all text-sm flex flex-col items-center gap-2 ${
                         role === 'migrant'
-                          ? 'bg-primary text-white'
+                          ? 'bg-green-600 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -241,7 +259,7 @@ export default function AuthPage() {
                     <button
                       type="button"
                       data-testid="role-helper"
-                      onClick={() => setRole('helper')}
+                      onClick={() => { setRole('helper'); setSelectedCategories([]); }}
                       className={`py-4 px-3 rounded-xl font-medium transition-all text-sm flex flex-col items-center gap-2 ${
                         role === 'helper'
                           ? 'bg-primary text-white'
@@ -312,28 +330,30 @@ export default function AuthPage() {
             </>
           )}
 
-          {/* Step 2: Need Categories (for migrants only) */}
-          {!isLogin && step === 2 && role === 'migrant' && (
+          {/* Step 2: Categories (for migrants and helpers) */}
+          {!isLogin && step === 2 && (role === 'migrant' || role === 'helper') && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                {NEED_CATEGORIES.map(cat => (
+                {HELP_CATEGORIES.map(cat => (
                   <button
                     key={cat.value}
                     type="button"
-                    onClick={() => toggleNeedCategory(cat.value)}
+                    onClick={() => toggleCategory(cat.value)}
                     className={`p-3 rounded-xl border-2 transition-all text-left ${
-                      needCategories.includes(cat.value)
-                        ? 'bg-primary text-white border-primary shadow-lg'
+                      selectedCategories.includes(cat.value)
+                        ? role === 'migrant' 
+                          ? 'bg-green-600 text-white border-green-600 shadow-lg'
+                          : 'bg-primary text-white border-primary shadow-lg'
                         : 'bg-white border-gray-200 hover:border-primary hover:shadow-md'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{cat.icon}</span>
                       <div>
-                        <div className={`text-sm font-bold ${needCategories.includes(cat.value) ? 'text-white' : 'text-textPrimary'}`}>
+                        <div className={`text-sm font-bold ${selectedCategories.includes(cat.value) ? 'text-white' : 'text-textPrimary'}`}>
                           {cat.label}
                         </div>
-                        <div className={`text-xs ${needCategories.includes(cat.value) ? 'text-white/80' : 'text-textSecondary'}`}>
+                        <div className={`text-xs ${selectedCategories.includes(cat.value) ? 'text-white/80' : 'text-textSecondary'}`}>
                           {cat.desc}
                         </div>
                       </div>
@@ -342,11 +362,17 @@ export default function AuthPage() {
                 ))}
               </div>
               
-              {needCategories.length > 0 && (
-                <div className="p-3 bg-green-100 rounded-xl border border-green-300">
-                  <p className="text-sm text-green-800 font-medium flex items-center gap-2">
+              {selectedCategories.length > 0 && (
+                <div className={`p-3 rounded-xl border ${
+                  role === 'migrant' 
+                    ? 'bg-green-100 border-green-300' 
+                    : 'bg-primary/10 border-primary/30'
+                }`}>
+                  <p className={`text-sm font-medium flex items-center gap-2 ${
+                    role === 'migrant' ? 'text-green-800' : 'text-primary'
+                  }`}>
                     <Check size={18} />
-                    {needCategories.length} categoria{needCategories.length > 1 ? 's' : ''} selecionada{needCategories.length > 1 ? 's' : ''}
+                    {selectedCategories.length} categoria{selectedCategories.length > 1 ? 's' : ''} selecionada{selectedCategories.length > 1 ? 's' : ''}
                   </p>
                 </div>
               )}
@@ -357,11 +383,15 @@ export default function AuthPage() {
             type="submit"
             data-testid="submit-button"
             disabled={loading}
-            className="w-full rounded-full py-6 text-lg font-bold bg-primary hover:bg-primary-hover"
+            className={`w-full rounded-full py-6 text-lg font-bold ${
+              role === 'migrant' && !isLogin
+                ? 'bg-green-600 hover:bg-green-700'
+                : 'bg-primary hover:bg-primary-hover'
+            }`}
           >
             {loading ? 'Carregando...' : (
               isLogin ? t('login') : (
-                step === 1 && role === 'migrant' ? 'Próximo' : t('register')
+                step === 1 && (role === 'migrant' || role === 'helper') ? 'Próximo' : t('register')
               )
             )}
           </Button>
@@ -373,7 +403,7 @@ export default function AuthPage() {
             onClick={() => {
               setIsLogin(!isLogin);
               setStep(1);
-              setNeedCategories([]);
+              setSelectedCategories([]);
             }}
             className="text-textSecondary hover:text-primary transition-colors"
           >
